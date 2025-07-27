@@ -1,26 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
+  /* Light theme - Notion-inspired colors */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #37352f;
+  --sidebar-bg: #f7f6f3;
+  --header-bg: #ffffff;
+  --border: #e9e9e7;
+  --hover: #f1f1ef;
+  --active: #e9e9e7;
+  --tab-bg: #f7f6f3;
+  --tab-active: #ffffff;
+  --status-bg: #f7f6f3;
+  --editor-bg: #ffffff;
+  --text-muted: #9b9a97;
+  --text-secondary: #64645f;
+}
+
+.dark {
+  /* Dark theme - Notion-inspired dark colors */
+  --background: #191919;
+  --foreground: #e9e9e7;
+  --sidebar-bg: #1e1e1e;
+  --header-bg: #1e1e1e;
+  --border: #373737;
+  --hover: #2f2f2f;
+  --active: #373737;
+  --tab-bg: #1e1e1e;
+  --tab-active: #191919;
+  --status-bg: #1e1e1e;
+  --editor-bg: #191919;
+  --text-muted: #6f6f6f;
+  --text-secondary: #9b9b9b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-header-bg: var(--header-bg);
+  --color-border: var(--border);
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-tab-bg: var(--tab-bg);
+  --color-tab-active: var(--tab-active);
+  --color-status-bg: var(--status-bg);
+  --color-editor-bg: var(--editor-bg);
+  --color-text-muted: var(--text-muted);
+  --color-text-secondary: var(--text-secondary);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body {
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#__next {
+  height: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
 }
