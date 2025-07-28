@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { useEditorStore } from '@/store/editorStore'
 import LoadingSpinner, { LoadingDots } from '@/components/ui/LoadingSpinner'
@@ -36,8 +36,13 @@ const MonacoEditor = React.memo(function MonacoEditor() {
   const editorRef = useRef<any>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
   const lastSavedContent = useRef<string>('')
 
-  const handleEditorDidMount = (editor: any, monaco: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const handleEditorDidMount = useCallback((editor: any, monaco: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     editorRef.current = editor
+    
+    // Force initial layout
+    setTimeout(() => {
+      editor.layout()
+    }, 0)
 
     // Configure Monaco themes
     monaco.editor.defineTheme('notion-light', {
@@ -101,15 +106,16 @@ const MonacoEditor = React.memo(function MonacoEditor() {
       fontFamily: "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
       lineHeight: 1.5,
       letterSpacing: 0.5,
-      padding: { top: 16, bottom: 16 },
+      padding: { top: 16, bottom: 16, left: 16, right: 16 },
       scrollBeyondLastLine: false,
       minimap: { 
         enabled: true,
         side: 'right',
         size: 'fit',
         showSlider: 'mouseover',
-        renderCharacters: true,
-        maxColumn: 120
+        renderCharacters: false,
+        maxColumn: 120,
+        scale: 1
       },
       renderWhitespace: 'selection',
       renderLineHighlight: 'line',
@@ -155,12 +161,14 @@ const MonacoEditor = React.memo(function MonacoEditor() {
       foldingStrategy: 'indentation',
       showFoldingControls: 'mouseover',
       unfoldOnClickAfterEndOfLine: false,
-      renderLineHighlight: 'line',
       selectOnLineNumbers: true,
       lineNumbersMinChars: 3,
       glyphMargin: true,
       lineDecorationsWidth: 10,
-      renderValidationDecorations: 'on'
+      renderValidationDecorations: 'on',
+      fixedOverflowWidgets: true,
+      overviewRulerBorder: false,
+      hideCursorInOverviewRuler: true
     })
 
     // Add keyboard shortcuts
@@ -236,7 +244,7 @@ const MonacoEditor = React.memo(function MonacoEditor() {
     if (activeFile?.content) {
       lastSavedContent.current = activeFile.content
     }
-  }
+  }, [isDarkMode])
 
   const handleEditorChange = (value: string | undefined) => {
     if (!activeFile || value === undefined) return
@@ -271,6 +279,29 @@ const MonacoEditor = React.memo(function MonacoEditor() {
     }
   }, [activeTabId, activeFile?.content])
 
+  // Add ResizeObserver to handle container size changes
+  useEffect(() => {
+    if (!editorRef.current) return
+    
+    let resizeTimer: NodeJS.Timeout
+    const resizeObserver = new ResizeObserver(() => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        editorRef.current?.layout()
+      }, 100)
+    })
+    
+    const container = editorRef.current.getContainerDomNode()
+    if (container && container.parentElement) {
+      resizeObserver.observe(container.parentElement)
+    }
+    
+    return () => {
+      clearTimeout(resizeTimer)
+      resizeObserver.disconnect()
+    }
+  }, [activeTabId])
+
   if (!activeFile) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-editor-bg text-text-muted">
@@ -287,10 +318,11 @@ const MonacoEditor = React.memo(function MonacoEditor() {
       </div>
     )
   }
-
+  
   return (
     <div className="w-full h-full bg-editor-bg">
       <MonacoEditorComponent
+        width="100%"
         height="100%"
         language={activeFile.language || 'plaintext'}
         value={activeFile.content || ''}
@@ -301,9 +333,11 @@ const MonacoEditor = React.memo(function MonacoEditor() {
           scrollbar: {
             vertical: 'auto',
             horizontal: 'auto',
-            verticalScrollbarSize: 12,
-            horizontalScrollbarSize: 12,
-          },
+            verticalScrollbarSize: 10,
+            horizontalScrollbarSize: 10,
+            useShadows: false,
+            alwaysConsumeMouseWheel: false
+          }
         }}
       />
     </div>

@@ -10,11 +10,13 @@ import MonacoEditor from '@/components/editor/MonacoEditor'
 import CompactEditorHeader from '@/components/editor/CompactEditorHeader'
 import LazyPreview from '@/components/editor/LazyPreview'
 import FeatureNotification from '@/components/ui/FeatureNotification'
+import DragDropZone from '@/components/file/DragDropZone'
+import Terminal from '@/components/terminal/Terminal'
 import { useEditorStore } from '@/store/editorStore'
 import { useKeyboardShortcuts, useFocusManagement } from '@/lib/useKeyboardShortcuts'
 
 export default function Home() {
-  const { isDarkMode, isPreviewOpen, isSidebarOpen, toggleSidebar } = useEditorStore()
+  const { isDarkMode, isPreviewOpen, isSidebarOpen, toggleSidebar, files, openTab, isTerminalOpen, toggleTerminal } = useEditorStore()
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -34,8 +36,13 @@ export default function Home() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     
+    // Ensure demo HTML file is open
+    if (files['demo-html']) {
+      openTab('demo-html')
+    }
+    
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  }, [files, openTab])
 
   // Initialize dark mode on mount
   useEffect(() => {
@@ -59,7 +66,7 @@ export default function Home() {
   if (!mounted) {
     return (
       <div className="h-screen flex flex-col bg-background text-foreground">
-        <div className="h-8 bg-header-bg border-b border-border flex items-center justify-center">
+        <div className="h-14 bg-header-bg border-b border-border flex items-center justify-center">
           <LoadingSpinner size="sm" />
         </div>
         <div className="flex flex-1">
@@ -79,20 +86,21 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground relative">
-      {/* Mobile Sidebar Overlay */}
-      {isMobile && isSidebarOpen && (
-        <div 
-          className="sidebar-overlay show"
-          onClick={handleOverlayClick}
-        />
-      )}
-      
-      {/* Header */}
-      <Header />
-      
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden gap-0">
+    <DragDropZone>
+      <div className="h-screen flex flex-col bg-background text-foreground relative">
+        {/* Mobile Sidebar Overlay */}
+        {isMobile && isSidebarOpen && (
+          <div 
+            className="sidebar-overlay show"
+            onClick={handleOverlayClick}
+          />
+        )}
+        
+        {/* Header */}
+        <Header />
+        
+        {/* Main Content */}
+        <div className="flex flex-1 overflow-hidden gap-0">
         {/* Sidebar - Responsive */}
         <div className={`
           ${isMobile 
@@ -104,9 +112,9 @@ export default function Home() {
         </div>
         
         {/* Editor Area */}
-        <div className="flex-1 flex min-w-0 gap-1">
+        <div className="flex-1 flex min-w-0 gap-0">
           {/* Editor Section */}
-          <div className="flex-1 flex flex-col min-w-96">
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             {/* Tab Bar - Mobile responsive */}
             <div className={`${isMobile ? 'tab-bar-mobile' : ''}`}>
               <TabBar />
@@ -116,7 +124,7 @@ export default function Home() {
             <CompactEditorHeader />
             
             {/* Monaco Editor */}
-            <div className="flex-1">
+            <div className="flex-1 min-h-0">
               <MonacoEditor />
             </div>
           </div>
@@ -137,10 +145,18 @@ export default function Home() {
       </div>
       
       {/* Status Bar - Hide on mobile for more space */}
-      {!isMobile && <StatusBar />}
+      {!isMobile && (
+        <div className="shrink-0">
+          <StatusBar />
+        </div>
+      )}
       
-      {/* Feature Notification */}
-      <FeatureNotification />
-    </div>
+        {/* Feature Notification */}
+        <FeatureNotification />
+        
+        {/* Terminal */}
+        <Terminal isOpen={isTerminalOpen} onClose={toggleTerminal} />
+      </div>
+    </DragDropZone>
   )
 }

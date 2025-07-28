@@ -7,7 +7,7 @@ export default function StatusBar() {
   const activeFile = getActiveFile()
 
   return (
-    <footer className="h-4 bg-status-bg border-t border-border flex items-center justify-between px-2 text-xs text-text-secondary shrink-0 overflow-hidden">
+    <footer className="h-6 bg-status-bg border-t border-border flex items-center justify-between px-3 text-xs text-text-secondary shrink-0 overflow-hidden">
       <div className="flex items-center gap-3 min-w-0">
         {activeFile && (
           <>

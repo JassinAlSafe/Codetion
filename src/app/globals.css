@@ -2,20 +2,39 @@
 @import "tailwindcss";
 
 :root {
-  /* Light theme - Notion-inspired colors */
-  --background: #ffffff;
-  --foreground: #37352f;
-  --sidebar-bg: #f7f6f3;
-  --header-bg: #ffffff;
-  --border: #e9e9e7;
-  --hover: #f1f1ef;
-  --active: #e9e9e7;
-  --tab-bg: #f7f6f3;
-  --tab-active: #ffffff;
-  --status-bg: #f7f6f3;
-  --editor-bg: #ffffff;
-  --text-muted: #9b9a97;
-  --text-secondary: #64645f;
+  /* shadcn/ui design tokens */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
+  --radius: 0.5rem;
+  
+  /* Custom CodeNotion colors */
+  --sidebar-bg: 0 0% 97%;
+  --header-bg: 0 0% 100%;
+  --hover: 0 0% 94%;
+  --active: 0 0% 90%;
+  --tab-bg: 0 0% 97%;
+  --tab-active: 0 0% 100%;
+  --status-bg: 0 0% 97%;
+  --editor-bg: 0 0% 100%;
+  --text-muted: 0 0% 45%;
+  --text-secondary: 0 0% 35%;
   
   /* Enhanced UI colors */
   --accent-primary: #007acc;
@@ -44,36 +63,74 @@
 }
 
 .dark {
-  /* Dark theme - Notion-inspired dark colors */
-  --background: #191919;
-  --foreground: #e9e9e7;
-  --sidebar-bg: #1e1e1e;
-  --header-bg: #1e1e1e;
-  --border: #373737;
-  --hover: #2f2f2f;
-  --active: #373737;
-  --tab-bg: #1e1e1e;
-  --tab-active: #191919;
-  --status-bg: #1e1e1e;
-  --editor-bg: #191919;
-  --text-muted: #6f6f6f;
-  --text-secondary: #9b9b9b;
+  /* shadcn/ui dark theme */
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 0 0% 83.1%;
+  
+  /* Custom CodeNotion dark colors */
+  --sidebar-bg: 0 0% 6%;
+  --header-bg: 0 0% 6%;
+  --hover: 0 0% 12%;
+  --active: 0 0% 18%;
+  --tab-bg: 0 0% 6%;
+  --tab-active: 0 0% 3.9%;
+  --status-bg: 0 0% 6%;
+  --editor-bg: 0 0% 3.9%;
+  --text-muted: 0 0% 45%;
+  --text-secondary: 0 0% 65%;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-sidebar-bg: var(--sidebar-bg);
-  --color-header-bg: var(--header-bg);
-  --color-border: var(--border);
-  --color-hover: var(--hover);
-  --color-active: var(--active);
-  --color-tab-bg: var(--tab-bg);
-  --color-tab-active: var(--tab-active);
-  --color-status-bg: var(--status-bg);
-  --color-editor-bg: var(--editor-bg);
-  --color-text-muted: var(--text-muted);
-  --color-text-secondary: var(--text-secondary);
+  /* shadcn/ui colors */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  
+  /* Custom CodeNotion colors */
+  --color-sidebar-bg: hsl(var(--sidebar-bg));
+  --color-header-bg: hsl(var(--header-bg));
+  --color-hover: hsl(var(--hover));
+  --color-active: hsl(var(--active));
+  --color-tab-bg: hsl(var(--tab-bg));
+  --color-tab-active: hsl(var(--tab-active));
+  --color-status-bg: hsl(var(--status-bg));
+  --color-editor-bg: hsl(var(--editor-bg));
+  --color-text-muted: hsl(var(--text-muted));
+  --color-text-secondary: hsl(var(--text-secondary));
+  
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
@@ -472,6 +529,7 @@ textarea:disabled {
     min-height: 44px;
     min-width: 44px;
   }
+  
   
   /* Reduce padding on mobile */
   .mobile-compact {

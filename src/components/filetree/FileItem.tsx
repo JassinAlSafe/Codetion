@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import { Edit, Trash2, MoreVertical } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useEditorStore, FileItem as FileItemType } from '@/store/editorStore'
 import { getFileIcon } from '@/lib/fileUtils'
 
@@ -67,25 +69,25 @@ const FileItem = React.memo(function FileItem({ file, level }: FileItemProps) {
   return (
     <div className="relative group">
       <div
-        className={`file-item flex items-center gap-1.5 h-7 px-1 py-0.5 cursor-pointer transition-smooth relative rounded-sm ${
-          isActive ? 'bg-active' : ''
+        className={`flex items-center gap-2 h-8 px-2 py-1 cursor-pointer transition-colors relative rounded-md mx-2 ${
+          isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
         } ${isDragging ? 'opacity-50' : ''}`}
-        style={{ paddingLeft }}
+        style={{ paddingLeft: Math.max(paddingLeft - 8, 8) }}
         onClick={handleClick}
         draggable={!isEditing}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex items-center gap-1 flex-1 min-w-0">
-          <span className="text-xs">{getFileIcon(file.name, false)}</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-sm">{getFileIcon(file.name, false)}</span>
           {isEditing ? (
-            <input
+            <Input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onBlur={handleRename}
               onKeyDown={handleKeyDown}
-              className="input flex-1 px-1 py-0 text-xs"
+              className="h-6 px-1 py-0 text-sm border-0 bg-background"
               autoFocus
               onFocus={(e) => {
                 const lastDot = e.target.value.lastIndexOf('.')
@@ -97,47 +99,52 @@ const FileItem = React.memo(function FileItem({ file, level }: FileItemProps) {
               }}
             />
           ) : (
-            <span className="text-xs text-foreground truncate flex-1">
+            <span className="text-sm font-medium truncate flex-1">
               {file.name}
             </span>
           )}
         </div>
 
         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation()
               setShowMenu(!showMenu)
             }}
-            className="p-0.5 hover:bg-border rounded transition-fast hover-lift"
+            className="h-6 w-6"
+            title="More actions"
           >
-            <MoreVertical size={10} />
-          </button>
+            <MoreVertical size={12} />
+          </Button>
         </div>
 
         {showMenu && (
-          <div className="menu absolute right-2 top-6 z-10">
-            <button
+          <div className="absolute right-2 top-8 z-10 bg-popover border border-border rounded-md shadow-md py-1 min-w-[120px]">
+            <Button
+              variant="ghost"
               onClick={(e) => {
                 e.stopPropagation()
                 setIsEditing(true)
                 setShowMenu(false)
               }}
-              className="menu-item text-xs"
+              className="w-full justify-start h-8 px-3 text-sm"
             >
-              <Edit size={10} />
+              <Edit size={14} className="mr-2" />
               Rename
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={(e) => {
                 e.stopPropagation()
                 handleDelete()
               }}
-              className="menu-item text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="w-full justify-start h-8 px-3 text-sm text-destructive hover:text-destructive"
             >
-              <Trash2 size={10} />
+              <Trash2 size={14} className="mr-2" />
               Delete
-            </button>
+            </Button>
           </div>
         )}
       </div>

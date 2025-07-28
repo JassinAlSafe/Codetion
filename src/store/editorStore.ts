@@ -37,6 +37,9 @@ export interface EditorStore {
   isPreviewOpen: boolean
   previewWidth: number
   
+  // Terminal state
+  isTerminalOpen: boolean
+  
   // File operations
   createFile: (name: string, parentId?: string, type?: 'file' | 'folder') => string
   deleteFile: (id: string) => void
@@ -59,6 +62,9 @@ export interface EditorStore {
   togglePreview: () => void
   setPreviewWidth: (width: number) => void
   
+  // Terminal operations
+  toggleTerminal: () => void
+  
   // Utility
   getFileById: (id: string) => FileItem | undefined
   getFilesByParent: (parentId?: string) => FileItem[]
@@ -72,39 +78,123 @@ const generateId = () => Math.random().toString(36).substr(2, 9)
 const getLanguageFromFileName = (fileName: string): string => {
   const ext = fileName.split('.').pop()?.toLowerCase()
   switch (ext) {
+    // JavaScript & TypeScript
     case 'js':
     case 'jsx':
+    case 'mjs':
+    case 'cjs':
       return 'javascript'
     case 'ts':
     case 'tsx':
+    case 'mts':
+    case 'cts':
       return 'typescript'
+    
+    // Web technologies
     case 'html':
+    case 'htm':
       return 'html'
     case 'css':
       return 'css'
     case 'scss':
     case 'sass':
       return 'scss'
+    case 'less':
+      return 'less'
     case 'json':
+    case 'jsonc':
       return 'json'
-    case 'md':
-      return 'markdown'
+    case 'xml':
+    case 'xhtml':
+      return 'xml'
+    case 'svg':
+      return 'xml'
+    
+    // Programming languages
     case 'py':
+    case 'pyw':
+    case 'pyi':
       return 'python'
     case 'java':
       return 'java'
+    case 'c':
+      return 'c'
+    case 'cpp':
+    case 'cxx':
+    case 'cc':
+    case 'c++':
+      return 'cpp'
+    case 'cs':
+      return 'csharp'
+    case 'php':
+      return 'php'
+    case 'rb':
+      return 'ruby'
     case 'go':
       return 'go'
     case 'rust':
     case 'rs':
       return 'rust'
+    case 'swift':
+      return 'swift'
+    case 'kt':
+    case 'kts':
+      return 'kotlin'
+    case 'scala':
+      return 'scala'
+    case 'r':
+      return 'r'
+    case 'dart':
+      return 'dart'
+    
+    // Shell & Scripts
+    case 'sh':
+    case 'bash':
+    case 'zsh':
+    case 'fish':
+      return 'shell'
+    case 'ps1':
+      return 'powershell'
+    case 'bat':
+    case 'cmd':
+      return 'bat'
+    
+    // Data & Config
     case 'sql':
       return 'sql'
-    case 'xml':
-      return 'xml'
     case 'yaml':
     case 'yml':
       return 'yaml'
+    case 'toml':
+      return 'toml'
+    case 'ini':
+      return 'ini'
+    case 'cfg':
+    case 'conf':
+      return 'ini'
+    case 'env':
+      return 'shell'
+    
+    // Documentation
+    case 'md':
+    case 'markdown':
+      return 'markdown'
+    case 'txt':
+      return 'plaintext'
+    case 'log':
+      return 'plaintext'
+    
+    // Specialized
+    case 'dockerfile':
+      return 'dockerfile'
+    case 'graphql':
+    case 'gql':
+      return 'graphql'
+    case 'prisma':
+      return 'prisma'
+    case 'proto':
+      return 'protobuf'
+    
     default:
       return 'plaintext'
   }
@@ -359,18 +449,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       },
       rootFiles: ['welcome', 'demo-html', 'demo-css', 'demo-js'],
-      tabs: [{
-        id: 'welcome',
-        name: 'Welcome.md',
-        isDirty: false,
-        filePath: 'Welcome.md'
-      }],
-      activeTabId: 'welcome',
+      tabs: [
+        {
+          id: 'welcome',
+          name: 'Welcome.md',
+          isDirty: false,
+          filePath: 'Welcome.md'
+        },
+        {
+          id: 'demo-html',
+          name: 'index.html',
+          isDirty: false,
+          filePath: 'index.html'
+        }
+      ],
+      activeTabId: 'demo-html',
       isDarkMode: false,
       sidebarWidth: 280,
       isSidebarOpen: true,
-      isPreviewOpen: false,
-      previewWidth: 350,
+      isPreviewOpen: true,
+      previewWidth: 400,
+      isTerminalOpen: false,
 
       // File operations
       createFile: (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
@@ -582,6 +681,11 @@ document.addEventListener('DOMContentLoaded', function() {
       setPreviewWidth: (width: number) => {
         set((state) => ({ ...state, previewWidth: width }))
       },
+      
+      // Terminal operations
+      toggleTerminal: () => {
+        set((state) => ({ ...state, isTerminalOpen: !state.isTerminalOpen }))
+      },
 
       // Utility functions
       getFileById: (id: string) => {
@@ -631,6 +735,83 @@ document.addEventListener('DOMContentLoaded', function() {
           file.type === 'file' && 
           (file.language === 'html' || file.language === 'css' || file.language === 'javascript')
         )
+      },
+      
+      // File operations
+      uploadFile: (file: File) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            const content = e.target?.result as string
+            const id = generateId()
+            const language = getLanguageFromFileName(file.name)
+            
+            const newFile: FileItem = {
+              id,
+              name: file.name,
+              type: 'file',
+              content,
+              language
+            }
+            
+            set((state) => ({
+              ...state,
+              files: { ...state.files, [id]: newFile },
+              rootFiles: [...state.rootFiles, id]
+            }))
+            
+            resolve(id)
+          }
+          reader.onerror = () => reject(new Error('Failed to read file'))
+          reader.readAsText(file)
+        })
+      },
+      
+      downloadFile: (id: string) => {
+        const { files } = get()
+        const file = files[id]
+        if (!file || file.type !== 'file') return
+        
+        const blob = new Blob([file.content || ''], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = file.name
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      },
+      
+      downloadProject: () => {
+        const { files } = get()
+        // We'll implement ZIP export later
+        const projectFiles = Object.values(files).filter(f => f.type === 'file')
+        
+        if (projectFiles.length === 1) {
+          const file = projectFiles[0]
+          const blob = new Blob([file.content || ''], { type: 'text/plain' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = file.name
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        } else {
+          // For now, download as JSON (we'll add ZIP later)
+          const projectData = { files: projectFiles }
+          const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = 'codenotion-project.json'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        }
       }
     }),
     {
