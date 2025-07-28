@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CodeNotion is a Notion-inspired code editor built with Next.js 15, React 19, TypeScript, and Monaco Editor. It features a file tree navigation system, tabbed editor interface, and persistent local storage using Zustand.
+CodeNotion is a Notion-inspired code editor built with Next.js 15, React 19, TypeScript, and Monaco Editor. It features a file tree navigation system, tabbed editor interface, persistent local storage using Zustand, and a live preview panel for web development (HTML/CSS/JS) similar to CodePen or JSFiddle.
 
 ## Development Commands
 
@@ -24,6 +24,7 @@ CodeNotion is a Notion-inspired code editor built with Next.js 15, React 19, Typ
 
 ### Key Components
 - **MonacoEditor** (`src/components/editor/MonacoEditor.tsx`): Core editor with custom Notion-themed light/dark modes, auto-save functionality, and keyboard shortcuts
+- **LivePreview** (`src/components/editor/LivePreview.tsx`): Real-time HTML/CSS/JS preview in sandboxed iframe with 300ms debounced updates
 - **FileTree** (`src/components/filetree/`): Hierarchical file browser with create/delete/rename operations
 - **TabBar** (`src/components/editor/TabBar.tsx`): Tab management for multiple open files
 - **Layout Components** (`src/components/layout/`): Header, Sidebar, StatusBar for overall UI structure
@@ -42,6 +43,13 @@ Files are stored as a flat object with hierarchical relationships:
 - Keyboard shortcuts (Cmd/Ctrl+S for manual save)
 - Language detection based on file extensions
 
+### Live Preview System
+- Detects HTML/CSS/JS files automatically (index.html, style.css, script.js)
+- Creates blob URLs for secure iframe rendering
+- 3-column layout: Sidebar → Editor → Preview (400px width)
+- Toggle visibility based on presence of web development files
+- Real-time updates with debounced rendering (300ms)
+
 ### Styling
 - Tailwind CSS with custom design system
 - CSS custom properties for theming
@@ -59,3 +67,12 @@ Files are stored as a flat object with hierarchical relationships:
 - `/src/components/` - Reusable React components organized by feature
 - `/src/store/` - Zustand state management
 - `/src/lib/` - Utility functions and helpers
+
+## Technology Insights
+
+### Tailwind CSS v4 Insights
+- Introduces a new zero-runtime approach
+- Provides first-class support for CSS variables
+- Enables more dynamic and flexible styling
+- Improves performance by eliminating runtime CSS generation
+- Supports more advanced configuration and customization options

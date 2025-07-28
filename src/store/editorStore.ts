@@ -33,6 +33,10 @@ export interface EditorStore {
   sidebarWidth: number
   isSidebarOpen: boolean
   
+  // Live Preview state
+  isPreviewOpen: boolean
+  previewWidth: number
+  
   // File operations
   createFile: (name: string, parentId?: string, type?: 'file' | 'folder') => string
   deleteFile: (id: string) => void
@@ -51,10 +55,16 @@ export interface EditorStore {
   setSidebarWidth: (width: number) => void
   toggleSidebar: () => void
   
+  // Preview operations
+  togglePreview: () => void
+  setPreviewWidth: (width: number) => void
+  
   // Utility
   getFileById: (id: string) => FileItem | undefined
   getFilesByParent: (parentId?: string) => FileItem[]
   getActiveFile: () => FileItem | undefined
+  getPreviewFiles: () => { html?: string; css?: string; js?: string }
+  shouldShowPreview: () => boolean
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9)
@@ -115,12 +125,23 @@ This is a modern, Notion-inspired code editor built with Next.js, TypeScript, an
 
 ## Features
 
-- 📁 File tree navigation
+- 📁 File tree navigation with full CRUD operations
 - 📝 Monaco Editor with syntax highlighting
 - 🎨 Beautiful Notion-inspired design
 - 🌙 Dark/Light mode toggle
 - 💾 Local file persistence
 - 📑 Tab system for multiple files
+- 🖥️ **Live Preview** - CodePen-like experience for web development
+
+## Live Preview
+
+Create HTML, CSS, and JS files to see them rendered in real-time! Try creating:
+
+- **index.html** - Your main HTML content
+- **style.css** - CSS styling
+- **script.js** - JavaScript functionality
+
+The preview panel will automatically appear when you have web files, and updates live as you type!
 
 ## Getting Started
 
@@ -128,13 +149,216 @@ This is a modern, Notion-inspired code editor built with Next.js, TypeScript, an
 2. Click on files to open them in tabs
 3. Use Cmd/Ctrl + N to create a new file
 4. Toggle dark mode with the theme button
+5. Create HTML/CSS/JS files to see the live preview in action
 
 Happy coding! 🚀
 `,
           language: 'markdown'
+        },
+        'demo-html': {
+          id: 'demo-html',
+          name: 'index.html',
+          type: 'file',
+          content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeNotion Demo</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome to CodeNotion Live Preview!</h1>
+            <p class="subtitle">A modern, Notion-inspired code editor</p>
+        </header>
+        
+        <main>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon">📝</div>
+                    <h3>Monaco Editor</h3>
+                    <p>Full VS Code editing experience with syntax highlighting and IntelliSense</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🎨</div>
+                    <h3>Beautiful Design</h3>
+                    <p>Clean, Notion-inspired interface that gets out of your way</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🖥️</div>
+                    <h3>Live Preview</h3>
+                    <p>See your changes instantly with our CodePen-like preview panel</p>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <button id="demo-btn" onclick="showAlert()">Click me!</button>
+                <div id="output"></div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>`,
+          language: 'html'
+        },
+        'demo-css': {
+          id: 'demo-css',
+          name: 'style.css',
+          type: 'file',
+          content: `/* CodeNotion Demo Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: white;
+}
+
+header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.feature-card p {
+    color: #666;
+}
+
+.demo-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+#demo-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#demo-btn:hover {
+    background: #5a6fd8;
+}
+
+#output {
+    margin-top: 1rem;
+    font-weight: bold;
+    color: #667eea;
+}`,
+          language: 'css'
+        },
+        'demo-js': {
+          id: 'demo-js',
+          name: 'script.js',
+          type: 'file',
+          content: `// CodeNotion Demo JavaScript
+function showAlert() {
+    const output = document.getElementById('output');
+    const messages = [
+        'Welcome to CodeNotion! 🎉',
+        'Edit this code and see changes instantly! ⚡',
+        'Try modifying the CSS for different styles! 🎨',
+        'Create your own HTML structure! 🏗️',
+        'JavaScript works perfectly too! 💻'
+    ];
+    
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    output.textContent = randomMessage;
+    
+    // Add some animation
+    output.style.opacity = '0';
+    setTimeout(() => {
+        output.style.opacity = '1';
+        output.style.transition = 'opacity 0.3s ease';
+    }, 100);
+}
+
+// Initialize with a welcome message
+document.addEventListener('DOMContentLoaded', function() {
+    const output = document.getElementById('output');
+    output.textContent = 'Live preview is working! Try clicking the button above.';
+    
+    // Add some interactive effects
+    const cards = document.querySelectorAll('.feature-card');
+    cards.forEach((card, index) => {
+        card.addEventListener('mouseenter', () => {
+            card.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.background = 'white';
+        });
+    });
+});`,
+          language: 'javascript'
         }
       },
-      rootFiles: ['welcome'],
+      rootFiles: ['welcome', 'demo-html', 'demo-css', 'demo-js'],
       tabs: [{
         id: 'welcome',
         name: 'Welcome.md',
@@ -145,6 +369,8 @@ Happy coding! 🚀
       isDarkMode: false,
       sidebarWidth: 280,
       isSidebarOpen: true,
+      isPreviewOpen: false,
+      previewWidth: 350,
 
       // File operations
       createFile: (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
@@ -348,6 +574,15 @@ Happy coding! 🚀
         set((state) => ({ ...state, isSidebarOpen: !state.isSidebarOpen }))
       },
 
+      // Preview operations
+      togglePreview: () => {
+        set((state) => ({ ...state, isPreviewOpen: !state.isPreviewOpen }))
+      },
+
+      setPreviewWidth: (width: number) => {
+        set((state) => ({ ...state, previewWidth: width }))
+      },
+
       // Utility functions
       getFileById: (id: string) => {
         return get().files[id]
@@ -368,6 +603,34 @@ Happy coding! 🚀
       getActiveFile: () => {
         const { files, activeTabId } = get()
         return activeTabId ? files[activeTabId] : undefined
+      },
+
+      getPreviewFiles: () => {
+        const { files } = get()
+        const result: { html?: string; css?: string; js?: string } = {}
+        
+        Object.values(files).forEach(file => {
+          if (file.type === 'file' && file.content !== undefined) {
+            const fileName = file.name.toLowerCase()
+            if (fileName === 'index.html' || fileName.endsWith('.html')) {
+              result.html = file.content
+            } else if (fileName === 'style.css' || fileName === 'styles.css' || fileName.endsWith('.css')) {
+              result.css = file.content
+            } else if (fileName === 'script.js' || fileName === 'main.js' || fileName.endsWith('.js')) {
+              result.js = file.content
+            }
+          }
+        })
+        
+        return result
+      },
+
+      shouldShowPreview: () => {
+        const { files } = get()
+        return Object.values(files).some(file => 
+          file.type === 'file' && 
+          (file.language === 'html' || file.language === 'css' || file.language === 'javascript')
+        )
       }
     }),
     {
@@ -377,7 +640,9 @@ Happy coding! 🚀
         rootFiles: state.rootFiles,
         isDarkMode: state.isDarkMode,
         sidebarWidth: state.sidebarWidth,
-        isSidebarOpen: state.isSidebarOpen
+        isSidebarOpen: state.isSidebarOpen,
+        isPreviewOpen: state.isPreviewOpen,
+        previewWidth: state.previewWidth
       })
     }
   )

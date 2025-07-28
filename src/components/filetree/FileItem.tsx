@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { File, Edit, Trash2, MoreVertical } from 'lucide-react'
+import React, { useState } from 'react'
+import { Edit, Trash2, MoreVertical } from 'lucide-react'
 import { useEditorStore, FileItem as FileItemType } from '@/store/editorStore'
 import { getFileIcon } from '@/lib/fileUtils'
 
@@ -10,11 +10,13 @@ interface FileItemProps {
   level: number
 }
 
-export default function FileItem({ file, level }: FileItemProps) {
+const FileItem = React.memo(function FileItem({ file, level }: FileItemProps) {
   const { openTab, deleteFile, renameFile, activeTabId } = useEditorStore()
   const [isEditing, setIsEditing] = useState(false)
   const [newName, setNewName] = useState(file.name)
   const [showMenu, setShowMenu] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  // const [isDragOver, setIsDragOver] = useState(false) // TODO: Implement drag over functionality
 
   const isActive = activeTabId === file.id
   const paddingLeft = level * 12 + 8
@@ -47,17 +49,35 @@ export default function FileItem({ file, level }: FileItemProps) {
     }
   }
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent) => {
+    setIsDragging(true)
+    e.dataTransfer.setData('text/plain', JSON.stringify({
+      id: file.id,
+      name: file.name,
+      type: file.type
+    }))
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+  }
+
   return (
     <div className="relative group">
       <div
-        className={`flex items-center gap-2 h-7 cursor-pointer hover:bg-hover transition-colors relative ${
+        className={`file-item flex items-center gap-1.5 h-7 px-1 py-0.5 cursor-pointer transition-smooth relative rounded-sm ${
           isActive ? 'bg-active' : ''
-        }`}
+        } ${isDragging ? 'opacity-50' : ''}`}
         style={{ paddingLeft }}
         onClick={handleClick}
+        draggable={!isEditing}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
       >
         <div className="flex items-center gap-1 flex-1 min-w-0">
-          <span className="text-sm">{getFileIcon(file.name, false)}</span>
+          <span className="text-xs">{getFileIcon(file.name, false)}</span>
           {isEditing ? (
             <input
               type="text"
@@ -65,7 +85,7 @@ export default function FileItem({ file, level }: FileItemProps) {
               onChange={(e) => setNewName(e.target.value)}
               onBlur={handleRename}
               onKeyDown={handleKeyDown}
-              className="flex-1 px-1 py-0 text-sm bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="input flex-1 px-1 py-0 text-xs"
               autoFocus
               onFocus={(e) => {
                 const lastDot = e.target.value.lastIndexOf('.')
@@ -77,7 +97,7 @@ export default function FileItem({ file, level }: FileItemProps) {
               }}
             />
           ) : (
-            <span className="text-sm text-foreground truncate flex-1">
+            <span className="text-xs text-foreground truncate flex-1">
               {file.name}
             </span>
           )}
@@ -89,23 +109,23 @@ export default function FileItem({ file, level }: FileItemProps) {
               e.stopPropagation()
               setShowMenu(!showMenu)
             }}
-            className="p-1 hover:bg-border rounded transition-colors"
+            className="p-0.5 hover:bg-border rounded transition-fast hover-lift"
           >
-            <MoreVertical size={12} />
+            <MoreVertical size={10} />
           </button>
         </div>
 
         {showMenu && (
-          <div className="absolute right-2 top-7 bg-background border border-border rounded-md shadow-lg py-1 z-10 min-w-[120px]">
+          <div className="menu absolute right-2 top-6 z-10">
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 setIsEditing(true)
                 setShowMenu(false)
               }}
-              className="w-full px-3 py-1 text-left text-sm hover:bg-hover transition-colors flex items-center gap-2"
+              className="menu-item text-xs"
             >
-              <Edit size={12} />
+              <Edit size={10} />
               Rename
             </button>
             <button
@@ -113,9 +133,9 @@ export default function FileItem({ file, level }: FileItemProps) {
                 e.stopPropagation()
                 handleDelete()
               }}
-              className="w-full px-3 py-1 text-left text-sm hover:bg-hover transition-colors flex items-center gap-2 text-red-600"
+              className="menu-item text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
-              <Trash2 size={12} />
+              <Trash2 size={10} />
               Delete
             </button>
           </div>
@@ -130,4 +150,6 @@ export default function FileItem({ file, level }: FileItemProps) {
       )}
     </div>
   )
-}
+})
+
+export default FileItem

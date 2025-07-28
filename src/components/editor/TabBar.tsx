@@ -1,10 +1,11 @@
 'use client'
 
+import React from 'react'
 import { X } from 'lucide-react'
 import { useEditorStore } from '@/store/editorStore'
 import { getFileIcon } from '@/lib/fileUtils'
 
-export default function TabBar() {
+const TabBar = React.memo(function TabBar() {
   const { tabs, activeTabId, setActiveTab, closeTab } = useEditorStore()
 
   if (tabs.length === 0) {
@@ -12,27 +13,28 @@ export default function TabBar() {
   }
 
   return (
-    <div className="h-10 bg-tab-bg border-b border-border flex items-center overflow-x-auto">
-      {tabs.map((tab) => (
+    <div className="h-7 bg-tab-bg border-b border-border flex items-center overflow-x-auto scrollbar-hide">
+      {tabs.map((tab, index) => (
         <div
           key={tab.id}
-          className={`
-            flex items-center gap-2 px-3 h-full border-r border-border cursor-pointer
-            transition-colors group relative min-w-0 max-w-48
+          className={`tab
+            flex items-center gap-1.5 px-2 h-full border-r border-border cursor-pointer
+            transition-smooth group relative min-w-0 max-w-36 shrink-0
             ${activeTabId === tab.id 
-              ? 'bg-tab-active text-foreground' 
+              ? 'bg-tab-active text-foreground active' 
               : 'bg-tab-bg text-text-secondary hover:bg-hover'
             }
           `}
           onClick={() => setActiveTab(tab.id)}
+          style={{ animationDelay: `${index * 50}ms` }}
         >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-1 flex-1 min-w-0">
             <span className="text-xs shrink-0">
               {getFileIcon(tab.name, false)}
             </span>
-            <span className="text-sm truncate">
+            <span className="text-xs truncate">
               {tab.name}
-              {tab.isDirty && <span className="text-orange-500 ml-1">●</span>}
+              {tab.isDirty && <span className="text-orange-500 ml-0.5">●</span>}
             </span>
           </div>
           
@@ -41,18 +43,15 @@ export default function TabBar() {
               e.stopPropagation()
               closeTab(tab.id)
             }}
-            className="p-1 hover:bg-border rounded opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            className="btn-ghost p-0.5 rounded opacity-0 group-hover:opacity-100 transition-fast shrink-0"
             title="Close tab"
           >
-            <X size={12} />
+            <X size={10} />
           </button>
-
-          {/* Active tab indicator */}
-          {activeTabId === tab.id && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
-          )}
         </div>
       ))}
     </div>
   )
-}
+})
+
+export default TabBar

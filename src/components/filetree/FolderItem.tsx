@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { ChevronRight, ChevronDown, Edit, Trash2, MoreVertical, Plus } from 'lucide-react'
 import { useEditorStore, FileItem as FileItemType } from '@/store/editorStore'
 import { getFileIcon } from '@/lib/fileUtils'
@@ -10,7 +10,7 @@ interface FolderItemProps {
   level: number
 }
 
-export default function FolderItem({ file, level }: FolderItemProps) {
+const FolderItem = React.memo(function FolderItem({ file, level }: FolderItemProps) {
   const { toggleFolder, deleteFile, renameFile, createFile, getFilesByParent } = useEditorStore()
   const [isEditing, setIsEditing] = useState(false)
   const [newName, setNewName] = useState(file.name)
@@ -72,7 +72,7 @@ export default function FolderItem({ file, level }: FolderItemProps) {
     <div className="relative">
       <div className="group">
         <div
-          className="flex items-center gap-1 h-7 cursor-pointer hover:bg-hover transition-colors"
+          className="flex items-center gap-1 h-7 px-1 py-0.5 cursor-pointer hover:bg-hover transition-colors rounded-sm"
           style={{ paddingLeft }}
           onClick={handleToggle}
         >
@@ -219,19 +219,30 @@ export default function FolderItem({ file, level }: FolderItemProps) {
       {file.isOpen && children.length > 0 && (
         <div>
           {children.map((child) => {
-            const ChildComponent = child.type === 'folder' 
-              ? require('./FolderItem').default 
-              : require('./FileItem').default
-            return (
-              <ChildComponent
-                key={child.id}
-                file={child}
-                level={level + 1}
-              />
-            )
+            if (child.type === 'folder') {
+              return (
+                <FolderItem
+                  key={child.id}
+                  file={child}
+                  level={level + 1}
+                />
+              )
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              const FileItemComponent = require('./FileItem').default as typeof import('./FileItem').default
+              return (
+                <FileItemComponent
+                  key={child.id}
+                  file={child}
+                  level={level + 1}
+                />
+              )
+            }
           })}
         </div>
       )}
     </div>
   )
-}
+})
+
+export default FolderItem

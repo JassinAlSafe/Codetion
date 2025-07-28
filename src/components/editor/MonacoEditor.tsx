@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useEditorStore } from '@/store/editorStore'
+import LoadingSpinner, { LoadingDots } from '@/components/ui/LoadingSpinner'
 
 const MonacoEditorComponent = dynamic(
   () => import('@monaco-editor/react'),
@@ -10,16 +11,19 @@ const MonacoEditorComponent = dynamic(
     ssr: false,
     loading: () => (
       <div className="w-full h-full flex items-center justify-center bg-editor-bg">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-text-secondary">Loading editor...</p>
+        <div className="flex flex-col items-center gap-3">
+          <LoadingSpinner size="lg" />
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm text-text-secondary">Loading Monaco Editor</p>
+            <LoadingDots className="text-text-muted" />
+          </div>
         </div>
       </div>
     )
   }
 )
 
-export default function MonacoEditor() {
+const MonacoEditor = React.memo(function MonacoEditor() {
   const { 
     getActiveFile, 
     updateFileContent, 
@@ -29,10 +33,10 @@ export default function MonacoEditor() {
   } = useEditorStore()
   
   const activeFile = getActiveFile()
-  const editorRef = useRef<any>(null)
+  const editorRef = useRef<any>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
   const lastSavedContent = useRef<string>('')
 
-  const handleEditorDidMount = (editor: any, monaco: any) => {
+  const handleEditorDidMount = (editor: any, monaco: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     editorRef.current = editor
 
     // Configure Monaco themes
@@ -99,7 +103,14 @@ export default function MonacoEditor() {
       letterSpacing: 0.5,
       padding: { top: 16, bottom: 16 },
       scrollBeyondLastLine: false,
-      minimap: { enabled: false },
+      minimap: { 
+        enabled: true,
+        side: 'right',
+        size: 'fit',
+        showSlider: 'mouseover',
+        renderCharacters: true,
+        maxColumn: 120
+      },
       renderWhitespace: 'selection',
       renderLineHighlight: 'line',
       cursorBlinking: 'smooth',
@@ -117,7 +128,39 @@ export default function MonacoEditor() {
       formatOnType: true,
       autoIndent: 'full',
       bracketPairColorization: { enabled: true },
-      guides: { bracketPairs: true, indentation: true }
+      guides: { bracketPairs: true, indentation: true },
+      find: {
+        addExtraSpaceOnTop: false,
+        autoFindInSelection: 'never',
+        seedSearchStringFromSelection: 'always'
+      },
+      quickSuggestions: {
+        other: true,
+        comments: false,
+        strings: false
+      },
+      parameterHints: {
+        enabled: true,
+        cycle: false
+      },
+      suggestOnTriggerCharacters: true,
+      acceptSuggestionOnEnter: 'on',
+      acceptSuggestionOnCommitCharacter: true,
+      snippetSuggestions: 'top',
+      wordBasedSuggestions: 'matchingDocuments',
+      semanticHighlighting: { enabled: true },
+      occurrencesHighlight: 'singleFile',
+      codeLens: true,
+      folding: true,
+      foldingStrategy: 'indentation',
+      showFoldingControls: 'mouseover',
+      unfoldOnClickAfterEndOfLine: false,
+      renderLineHighlight: 'line',
+      selectOnLineNumbers: true,
+      lineNumbersMinChars: 3,
+      glyphMargin: true,
+      lineDecorationsWidth: 10,
+      renderValidationDecorations: 'on'
     })
 
     // Add keyboard shortcuts
@@ -132,6 +175,60 @@ export default function MonacoEditor() {
           lastSavedContent.current = content
           markTabDirty(activeFile.id, false)
         }
+      }
+    })
+
+    // Advanced find and replace
+    editor.addAction({
+      id: 'advanced-find',
+      label: 'Find and Replace',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF],
+      run: () => {
+        editor.getAction('actions.find').run()
+      }
+    })
+
+    // Toggle minimap
+    editor.addAction({
+      id: 'toggle-minimap',
+      label: 'Toggle Minimap',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyM],
+      run: () => {
+        const currentOptions = editor.getOptions()
+        const minimapEnabled = currentOptions.get(monaco.editor.EditorOption.minimap).enabled
+        editor.updateOptions({
+          minimap: { enabled: !minimapEnabled }
+        })
+      }
+    })
+
+    // Go to line
+    editor.addAction({
+      id: 'go-to-line',
+      label: 'Go to Line',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyG],
+      run: () => {
+        editor.getAction('editor.action.gotoLine').run()
+      }
+    })
+
+    // Format document
+    editor.addAction({
+      id: 'format-document',
+      label: 'Format Document',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF],
+      run: () => {
+        editor.getAction('editor.action.formatDocument').run()
+      }
+    })
+
+    // Comment line
+    editor.addAction({
+      id: 'toggle-comment',
+      label: 'Toggle Line Comment',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Slash],
+      run: () => {
+        editor.getAction('editor.action.commentLine').run()
       }
     })
 
@@ -160,7 +257,7 @@ export default function MonacoEditor() {
   // Update theme when dark mode changes
   useEffect(() => {
     if (editorRef.current) {
-      const monaco = (window as any).monaco
+      const monaco = (window as any).monaco // eslint-disable-line @typescript-eslint/no-explicit-any
       if (monaco) {
         monaco.editor.setTheme(isDarkMode ? 'notion-dark' : 'notion-light')
       }
@@ -172,7 +269,7 @@ export default function MonacoEditor() {
     if (activeFile?.content !== undefined) {
       lastSavedContent.current = activeFile.content
     }
-  }, [activeTabId])
+  }, [activeTabId, activeFile?.content])
 
   if (!activeFile) {
     return (
@@ -211,4 +308,6 @@ export default function MonacoEditor() {
       />
     </div>
   )
-}
+})
+
+export default MonacoEditor

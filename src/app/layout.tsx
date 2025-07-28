@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -6,7 +6,11 @@ export const metadata: Metadata = {
   description: "A beautiful, Notion-inspired code editor built with Next.js, TypeScript, and Monaco Editor",
   keywords: ["code editor", "monaco", "notion", "nextjs", "typescript"],
   authors: [{ name: "CodeNotion Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -20,7 +24,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#ffffff" />
       </head>
-      <body className="h-screen overflow-hidden">
+      <body className="h-screen overflow-hidden" suppressHydrationWarning>
         {children}
       </body>
     </html>
